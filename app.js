@@ -1,5 +1,5 @@
 // JSONBin.io 設定
-const JSONBIN_API_KEY = '$2a$10$fuyJjSPztfHlaKC4O/yQJ.wi1F1JwubQoqjmtOOPg1HiUHTClV9dS';
+const JSONBIN_API_KEY = '$2a$10$fuyJjSPztFHlaKC4O/yQJ.wi1F1JwubQoqjmtOOPg1HiUHTClV9dS';
 const JSONBIN_API_URL = 'https://api.jsonbin.io/v3/b';
 const JSONBIN_BIN_ID = '6a46f880da38895dfe256075'; // 固定のBIN ID（全員が共有）
 
