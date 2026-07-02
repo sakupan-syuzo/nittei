@@ -1,5 +1,5 @@
 // JSONBin.io 設定
-const JSONBIN_API_KEY = '$2a$10$dnRDL/CpTFvw.N6Rz1RWs.nB95Niz31OpT3HWMQS3D1z38xArmVKO';
+const JSONBIN_API_KEY = '$2a$10$fuyJjSPztFHlaKC4O/yQJ.wi1F1JwubQoqjmtOOPg1HiUHTClV9dS';
 const JSONBIN_API_URL = 'https://api.jsonbin.io/v3/b';
 
 // フォルダ識別子（コピー時に変更してください）
