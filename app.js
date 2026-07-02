@@ -20,7 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
 function initializeView() {
     // イベント一覧のみ表示
     hideAllSections();
-    document.getElementById('event-list-section').style.display = 'block';
+    const section = document.getElementById('event-list-section');
+    section.classList.remove('hidden');
+    section.style.display = 'block';
     document.getElementById('password-modal').classList.add('hidden');
 }
 
