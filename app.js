@@ -634,3 +634,10 @@ function deleteEvent(eventId) {
         showLoading(false);
     }
 }
+// ==================== グローバルスコープに関数を公開 ====================
+// HTMLのonclick属性で使用する関数をグローバルに公開
+window.removeDateCandidate = removeDateCandidate;
+window.removeEditDateCandidate = removeEditDateCandidate;
+window.showEventDetail = showEventDetail;
+window.showEditEventForm = showEditEventForm;
+window.confirmDeleteEvent = confirmDeleteEvent;
