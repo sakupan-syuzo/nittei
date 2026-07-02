@@ -1,5 +1,14 @@
-// LocalStorage キー
-const STORAGE_KEY = 'event_scheduler_data';
+// JSONBin.io 設定
+const JSONBIN_API_KEY = 'YOUR_API_KEY_HERE'; // $2a$10$dnRDL/CpTFvw.N6Rz1RWs.nB95Niz31OpT3HWMQS3D1z38xArmVKO
+const JSONBIN_API_URL = 'https://api.jsonbin.io/v3/b';
+
+// フォルダ識別子（コピー時に変更してください）
+// 例: 'work', 'private', 'family' など
+const FOLDER_ID = 'default'; // ← 各フォルダで異なる値に変更してください
+
+// LocalStorage キー（フォルダごとに分離）
+const STORAGE_KEY = `event_scheduler_data_${FOLDER_ID}`;
+const BIN_ID_KEY = `BIN_ID_KEY_${FOLDER_ID}`;
 const ADMIN_PASSWORD = 'open';
 
 // 状態管理
@@ -126,26 +135,88 @@ function removeDateCandidate(button) {
 }
 
 // イベント一覧の読み込み
-function loadEvents() {
+async function loadEvents() {
     showLoading(true);
     try {
-        const data = localStorage.getItem(STORAGE_KEY);
-        events = data ? JSON.parse(data) : [];
+        // JSONBin.ioから読み込み
+        const binId = localStorage.getItem(BIN_ID_KEY);
+
+        if (!binId) {
+            // BIN IDがない場合は空の配列
+            events = [];
+            renderEventList();
+            return;
+        }
+
+        const response = await fetch(`${JSONBIN_API_URL}/${binId}/latest`, {
+            method: 'GET',
+            headers: {
+                'X-Master-Key': JSONBIN_API_KEY
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            events = data.record || [];
+        } else {
+            // エラー時はローカルストレージから読み込み
+            const localData = localStorage.getItem(STORAGE_KEY);
+            events = localData ? JSON.parse(localData) : [];
+        }
+
         renderEventList();
     } catch (error) {
         console.error('Error loading events:', error);
-        showMessage('イベントの読み込み中にエラーが発生しました', 'error');
-        events = [];
+        // エラー時はローカルストレージから読み込み
+        const localData = localStorage.getItem(STORAGE_KEY);
+        events = localData ? JSON.parse(localData) : [];
+        renderEventList();
     } finally {
         showLoading(false);
     }
 }
 
 // データの保存
-function saveEvents() {
+async function saveEvents() {
     try {
+        // ローカルストレージにもバックアップ
         localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
-        return true;
+
+        // JSONBin.ioに保存
+        const binId = localStorage.getItem(BIN_ID_KEY);
+
+        let response;
+        if (binId) {
+            // 既存のBINを更新
+            response = await fetch(`${JSONBIN_API_URL}/${binId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': JSONBIN_API_KEY
+                },
+                body: JSON.stringify(events)
+            });
+        } else {
+            // 新しいBINを作成
+            response = await fetch(JSONBIN_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': JSONBIN_API_KEY,
+                    'X-Bin-Name': 'event-scheduler-data'
+                },
+                body: JSON.stringify(events)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const newBinId = data.metadata.id;
+                localStorage.setItem(BIN_ID_KEY, newBinId);
+                console.log('Created new BIN:', newBinId);
+            }
+        }
+
+        return response.ok;
     } catch (error) {
         console.error('Error saving events:', error);
         showMessage('データの保存に失敗しました', 'error');
@@ -173,7 +244,7 @@ function renderEventList() {
 }
 
 // イベントの作成
-function handleCreateEvent(e) {
+async function handleCreateEvent(e) {
     e.preventDefault();
 
     const title = document.getElementById('event-title').value.trim();
@@ -201,7 +272,7 @@ function handleCreateEvent(e) {
 
         events.push(event);
 
-        if (saveEvents()) {
+        if (await saveEvents()) {
             showMessage('イベントを作成しました', 'success');
             showEventList();
         } else {
@@ -348,7 +419,7 @@ function renderResponsesSummary(event) {
 }
 
 // 回答の送信
-function handleSubmitResponse(e) {
+async function handleSubmitResponse(e) {
     e.preventDefault();
 
     const name = document.getElementById('participant-name').value.trim();
@@ -384,7 +455,7 @@ function handleSubmitResponse(e) {
 
         event.responses.push(response);
 
-        if (saveEvents()) {
+        if (await saveEvents()) {
             showMessage('回答を送信しました', 'success');
             document.getElementById('response-form').reset();
             loadEventDetail(currentEventId);
@@ -564,7 +635,7 @@ function removeEditDateCandidate(button) {
 }
 
 // イベントの更新
-function handleEditEvent(e) {
+async function handleEditEvent(e) {
     e.preventDefault();
 
     const eventId = document.getElementById('edit-event-id').value;
@@ -597,7 +668,7 @@ function handleEditEvent(e) {
             updatedAt: new Date().toISOString()
         };
 
-        if (saveEvents()) {
+        if (await saveEvents()) {
             showMessage('イベントを更新しました', 'success');
             showAdminPage();
         } else {
@@ -628,7 +699,7 @@ function confirmDeleteEvent(eventId) {
 }
 
 // イベントの削除
-function deleteEvent(eventId) {
+async function deleteEvent(eventId) {
     showLoading(true);
     try {
         const eventIndex = events.findIndex(e => e.id === eventId);
@@ -640,7 +711,7 @@ function deleteEvent(eventId) {
 
         events.splice(eventIndex, 1);
 
-        if (saveEvents()) {
+        if (await saveEvents()) {
             showMessage('イベントを削除しました', 'success');
             renderAdminEventList();
         } else {
