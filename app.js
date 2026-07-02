@@ -48,24 +48,35 @@ function initEventListeners() {
 // イベント一覧の表示
 function showEventList() {
     hideAllSections();
-    document.getElementById('event-list-section').style.display = 'block';
+    const section = document.getElementById('event-list-section');
+    section.classList.remove('hidden');
+    section.style.display = 'block';
     currentView = 'list';
     loadEvents();
 }
 
 // 全セクションを非表示
 function hideAllSections() {
-    document.getElementById('event-list-section').style.display = 'none';
-    document.getElementById('create-event-section').style.display = 'none';
-    document.getElementById('event-detail-section').style.display = 'none';
-    document.getElementById('admin-section').style.display = 'none';
-    document.getElementById('edit-event-section').style.display = 'none';
+    const sections = [
+        'event-list-section',
+        'create-event-section',
+        'event-detail-section',
+        'admin-section',
+        'edit-event-section'
+    ];
+    sections.forEach(id => {
+        const section = document.getElementById(id);
+        section.style.display = 'none';
+        section.classList.add('hidden');
+    });
 }
 
 // イベント作成フォームの表示
 function showCreateEventForm() {
     hideAllSections();
-    document.getElementById('create-event-section').style.display = 'block';
+    const section = document.getElementById('create-event-section');
+    section.classList.remove('hidden');
+    section.style.display = 'block';
     currentView = 'create';
 
     // フォームのリセット
@@ -82,7 +93,9 @@ function showCreateEventForm() {
 // イベント詳細の表示
 function showEventDetail(eventId) {
     hideAllSections();
-    document.getElementById('event-detail-section').style.display = 'block';
+    const section = document.getElementById('event-detail-section');
+    section.classList.remove('hidden');
+    section.style.display = 'block';
     currentView = 'detail';
     currentEventId = eventId;
     loadEventDetail(eventId);
@@ -463,7 +476,9 @@ function showAdminPage() {
     }
 
     hideAllSections();
-    document.getElementById('admin-section').style.display = 'block';
+    const section = document.getElementById('admin-section');
+    section.classList.remove('hidden');
+    section.style.display = 'block';
     currentView = 'admin';
 
     renderAdminEventList();
@@ -503,7 +518,9 @@ function showEditEventForm(eventId) {
     }
 
     hideAllSections();
-    document.getElementById('edit-event-section').style.display = 'block';
+    const section = document.getElementById('edit-event-section');
+    section.classList.remove('hidden');
+    section.style.display = 'block';
     currentView = 'edit';
     currentEventId = eventId;
 
@@ -634,6 +651,7 @@ function deleteEvent(eventId) {
         showLoading(false);
     }
 }
+
 // ==================== グローバルスコープに関数を公開 ====================
 // HTMLのonclick属性で使用する関数をグローバルに公開
 window.removeDateCandidate = removeDateCandidate;
