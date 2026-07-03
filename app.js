@@ -23,7 +23,30 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeView();
     initEventListeners();
     loadEvents();
+
+    // URLパラメータをチェック
+    checkURLParameters();
 });
+
+// URLパラメータをチェック
+function checkURLParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventId = urlParams.get('event');
+
+    if (eventId) {
+        // URLパラメータでイベントIDが指定されている場合、直接イベント詳細を表示
+        // loadEvents完了後に実行するため、少し待つ
+        setTimeout(() => {
+            const event = events.find(e => e.id === eventId);
+            if (event) {
+                showEventDetail(eventId);
+            } else {
+                showMessage('指定されたイベントが見つかりません', 'error');
+                showEventList();
+            }
+        }, 500);
+    }
+}
 
 // 初期表示の設定
 function initializeView() {
@@ -240,8 +263,8 @@ async function handleCreateEvent(e) {
         events.push(event);
 
         if (await saveEvents()) {
-            showMessage('イベントを作成しました', 'success');
-            showEventList();
+            // イベント作成成功 → URLを表示
+            showEventCreatedModal(eventId);
         } else {
             showMessage('イベントの作成に失敗しました', 'error');
         }
@@ -692,6 +715,62 @@ async function deleteEvent(eventId) {
     }
 }
 
+// ==================== イベント作成完了モーダル ====================
+function showEventCreatedModal(eventId) {
+    const baseUrl = window.location.origin + window.location.pathname;
+    const eventUrl = `${baseUrl}?event=${eventId}`;
+
+    // モーダルのHTML を作成
+    const modalHtml = `
+        <div id="event-created-modal" class="modal" style="display: flex;">
+            <div class="modal-content">
+                <h3>✅ イベントを作成しました！</h3>
+                <p style="margin: 20px 0;">このイベントのURLを参加者に共有してください：</p>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; word-break: break-all;">
+                    <input type="text" id="event-url-input" value="${eventUrl}" readonly
+                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9em;">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" onclick="copyEventUrl()">📋 URLをコピー</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEventCreatedModal()">閉じる</button>
+                </div>
+                <p style="margin-top: 20px; font-size: 0.9em; color: #666;">
+                    💡 参加者はこのURLから直接イベントページにアクセスできます
+                </p>
+            </div>
+        </div>
+    `;
+
+    // モーダルを追加
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function copyEventUrl() {
+    const input = document.getElementById('event-url-input');
+    input.select();
+    input.setSelectionRange(0, 99999); // モバイル対応
+
+    try {
+        document.execCommand('copy');
+        showMessage('URLをコピーしました！', 'success');
+    } catch (err) {
+        // フォールバック：クリップボードAPIを使用
+        navigator.clipboard.writeText(input.value).then(() => {
+            showMessage('URLをコピーしました！', 'success');
+        }).catch(() => {
+            showMessage('コピーに失敗しました。手動でコピーしてください。', 'error');
+        });
+    }
+}
+
+function closeEventCreatedModal() {
+    const modal = document.getElementById('event-created-modal');
+    if (modal) {
+        modal.remove();
+    }
+    showEventList();
+}
+
 // ==================== グローバルスコープに関数を公開 ====================
 // HTMLのonclick属性で使用する関数をグローバルに公開
 window.removeDateCandidate = removeDateCandidate;
@@ -699,3 +778,5 @@ window.removeEditDateCandidate = removeEditDateCandidate;
 window.showEventDetail = showEventDetail;
 window.showEditEventForm = showEditEventForm;
 window.confirmDeleteEvent = confirmDeleteEvent;
+window.copyEventUrl = copyEventUrl;
+window.closeEventCreatedModal = closeEventCreatedModal;
