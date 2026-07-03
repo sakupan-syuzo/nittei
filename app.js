@@ -148,7 +148,7 @@ async function loadEvents() {
 
         if (response.ok) {
             const data = await response.json();
-            events = data.record || [];
+            events = data.record.events || [];
         } else {
             // エラー時はローカルストレージから読み込み
             const localData = localStorage.getItem(STORAGE_KEY);
@@ -180,7 +180,7 @@ async function saveEvents() {
                 'Content-Type': 'application/json',
                 'X-Master-Key': JSONBIN_API_KEY
             },
-            body: JSON.stringify(events)
+            body: JSON.stringify({ events: events })
         });
 
         return response.ok;
