@@ -62,7 +62,6 @@ function initializeView() {
 function initEventListeners() {
     document.getElementById('create-event-btn').addEventListener('click', showCreateEventForm);
     document.getElementById('cancel-create-btn').addEventListener('click', showEventList);
-    document.getElementById('back-to-list-btn').addEventListener('click', showEventList);
     document.getElementById('add-date-btn').addEventListener('click', addDateCandidate);
     document.getElementById('create-event-form').addEventListener('submit', handleCreateEvent);
     document.getElementById('response-form').addEventListener('submit', handleSubmitResponse);
@@ -298,8 +297,17 @@ function loadEventDetail(eventId) {
 
 // イベント詳細の描画
 function renderEventDetail(event) {
+    const baseUrl = window.location.origin + window.location.pathname;
+    const eventUrl = `${baseUrl}?event=${event.id}`;
+
     const detailContainer = document.getElementById('event-detail');
     detailContainer.innerHTML = `
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button type="button" class="btn btn-secondary" onclick="showEventList()">一覧に戻る</button>
+            <button type="button" class="btn btn-secondary" onclick="copyCurrentEventUrl('${eventUrl}')">
+                📋 このイベントのURLをコピー
+            </button>
+        </div>
         <div class="event-info">
             <h2>${escapeHtml(event.title)}</h2>
             <p>${escapeHtml(event.description || '説明なし')}</p>
@@ -763,6 +771,28 @@ function copyEventUrl() {
     }
 }
 
+function copyCurrentEventUrl(url) {
+    try {
+        // クリップボードAPIを使用
+        navigator.clipboard.writeText(url).then(() => {
+            showMessage('URLをコピーしました！', 'success');
+        }).catch(() => {
+            // フォールバック：テキストエリアを使う
+            const textarea = document.createElement('textarea');
+            textarea.value = url;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showMessage('URLをコピーしました！', 'success');
+        });
+    } catch (err) {
+        showMessage('コピーに失敗しました。手動でコピーしてください。', 'error');
+    }
+}
+
 function closeEventCreatedModal() {
     const modal = document.getElementById('event-created-modal');
     if (modal) {
@@ -775,8 +805,10 @@ function closeEventCreatedModal() {
 // HTMLのonclick属性で使用する関数をグローバルに公開
 window.removeDateCandidate = removeDateCandidate;
 window.removeEditDateCandidate = removeEditDateCandidate;
+window.showEventList = showEventList;
 window.showEventDetail = showEventDetail;
 window.showEditEventForm = showEditEventForm;
 window.confirmDeleteEvent = confirmDeleteEvent;
 window.copyEventUrl = copyEventUrl;
+window.copyCurrentEventUrl = copyCurrentEventUrl;
 window.closeEventCreatedModal = closeEventCreatedModal;
