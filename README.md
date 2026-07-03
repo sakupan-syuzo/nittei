@@ -5,7 +5,6 @@
 ![イベント日程調整ツール](https://img.shields.io/badge/JavaScript-Vanilla-yellow) ![GitHub Pages](https://img.shields.io/badge/Deploy-GitHub%20Pages-blue) ![JSONBin](https://img.shields.io/badge/Storage-JSONBin.io-green)
 
 ## 🌟 デモサイト
-
 - **デフォルト版**: https://sakupan-syuzo.github.io/nittei/
 - **職場用**: https://sakupan-syuzo.github.io/nittei-work/
 
@@ -253,7 +252,7 @@ MIT License
 
 ---
 
-## 📞 サポート
+## 📞 サポート　
 
 質問や問題がある場合は、GitHubのIssuesを開いてください。
 
